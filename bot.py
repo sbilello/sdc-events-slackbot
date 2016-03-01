@@ -41,11 +41,7 @@ class SlackWrapper(object):
 
 
             for reply in rv:
-                #print reply
-
                 if 'channel' in reply:
-                    if 'reply_to' in reply:
-                        print '> ' + reply['text']
                     if 'type' in reply and reply['type'] == 'message':
                         # only accept direct messages
                         if reply['channel'][0] == 'D':
@@ -58,12 +54,9 @@ class SlackWrapper(object):
                                 if not 'text' in reply:
                                     continue
                                 
-                                print '< (%s) %s' % (self.slack_users[reply['user']], reply['text'])
-                                pass
-
                                 txt = reply['text']
-
                                 self.inputs.append(txt.strip(' \t\n\r?!.'))
+
             if len(self.inputs) != 0:
                 return
 
@@ -84,8 +77,6 @@ class SlackBuddy(SlackWrapper):
     def run(self):
         while True:
             self.listen()
-
-            #print self.inputs
 
             for i in self.inputs:
                 if i == 'help':
