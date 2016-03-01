@@ -71,8 +71,35 @@ class SlackBuddy(SlackWrapper):
         super(SlackBuddy, self).__init__(slack_client, slack_id)
 
     def print_help(self):
-        self.say(self.last_channel_id, 'Basic syntax:')
-        self.say(self.last_channel_id, 'Advanced syntax:')
+        self.say(self.last_channel_id, '*Basic syntax*: just type something (e.g. _load balancer going down for maintenance_). The text you type will be converted into an alert with severity 6 (info)')
+        self.say(self.last_channel_id, '*Advanced syntax*: name, description (optional) and severity (optional) can be specified separately. For example:\n    _name=test 1, desc=test event, severity=5_\n    _name=test 2, severity=1_')
+
+    def parse_line(self, line):
+        components = line.split(",")
+
+        if len(components) == 1:
+            self._sdclient.post_event(line)
+            self.say(self.last_channel_id, 'event posted')
+        else:
+            name = ''
+            desc = ''
+            severity = 6
+            for c in components:
+                tpl = c.strip(' \t\n\r?!.').split("=")
+                if tpl[0]== 'name':
+                    name = tpl[1]
+                if tpl[0]== 'desc':
+                    desc = tpl[1]
+                if tpl[0]== 'severity':
+                    severity = int(tpl[1])
+
+            if name == '':
+                self.say('error: name cannot be empty')
+                return
+
+            self._sdclient.post_event(name, desc, severity)
+            self.say(self.last_channel_id, 'event posted')
+
 
     def run(self):
         while True:
@@ -82,9 +109,7 @@ class SlackBuddy(SlackWrapper):
                 if i == 'help':
                     self.print_help()
                 else:
-                    self._sdclient.post_event(i)
-                    self.say(self.last_channel_id, 'event posted')
-
+                    self.parse_line(i)
 
 ###############################################################################
 # Entry point
