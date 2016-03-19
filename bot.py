@@ -34,6 +34,7 @@ class SlackWrapper(object):
         while True:
             try:
                 rv = self.slack_client.rtm_read()
+                time.sleep(.1)
             except KeyboardInterrupt:
                 sys.exit(0)
             except:
